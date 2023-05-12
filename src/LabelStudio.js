@@ -13,6 +13,8 @@ import defaultOptions from './defaultOptions';
 import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 
+import {onLabelStudioConstructor} from "../../cve/js/label-studio.js";
+
 configure({
   isolateGlobalState: true,
 });
@@ -37,6 +39,8 @@ export class LabelStudio {
     this.options = options ?? {};
     this.destroy = (() => { /* noop */ });
 
+    onLabelStudioConstructor(this);
+    
     this.supportLgacyEvents(options);
     this.createApp();
 
