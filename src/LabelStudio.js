@@ -13,7 +13,7 @@ import defaultOptions from './defaultOptions';
 import { destroy } from 'mobx-state-tree';
 import { destroy as destroySharedStore } from './mixins/SharedChoiceStore/mixin';
 
-import {onLabelStudioConstructor} from "../../cve/js/label-studio.js";
+import {onLabelStudioConstructor} from "../cve/js/label-studio.js";
 
 configure({
   isolateGlobalState: true,
