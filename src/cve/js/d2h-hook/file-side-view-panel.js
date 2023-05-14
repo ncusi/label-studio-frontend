@@ -236,7 +236,7 @@ function createSelectHunkCheckbox(parent, dropDownLists)
     label.appendChild(checkbox);
     label.appendChild(document.createTextNode("Hunk"))
 
-    label.style.fontSize = "1.25em";
+    label.style.fontSize = "1.15em";
 
     parent.style.backgroundColor = "black";
 

@@ -1,3 +1,5 @@
+import {createSelectMultipleLineRatingDropDownListsHelpersForFileSideView} from "./file-side-view-panel.js";
+
 function createSelectMultipleLineRatingDropDownListsHelpers(ratedFile, allSelectorContainers)
 {
     [ratedFile.ratedLinesBeforeChange, ratedFile.ratedLinesAfterChange]
