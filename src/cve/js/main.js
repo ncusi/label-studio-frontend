@@ -147,15 +147,35 @@ function createMutationObserver()
     });
 }
 
+// in production build the properties we need to modify are read-only
+// so disable creating read-only properties before they're created
+function disableCreatingReadOnlyProperties()
+{
+    const originalDefineProperty = Object.defineProperty;
+
+    Object.defineProperty = (object, property, attributes) =>
+    {
+        if(attributes && attributes.writable === false)
+            attributes.writable = true;
+
+        return originalDefineProperty(object, property, attributes);
+    };
+}
+
+function onFirstHookCall()
+{
+    createCategories();
+
+    createMutationObserver();
+
+    disableCreatingReadOnlyProperties();
+}
+
 function onLabelStudioConstructor(labelStudio)
 {
-    // create categories and mutation observer only the first time the code is called
+    // create categories and mutation observer only the first time the hook code is called
     if(!currentLabelStudio)
-    {
-        createCategories();
-
-        createMutationObserver();    
-    }
+        onFirstHookCall();
     
     labelStudio.options.interfaces =
     [
@@ -168,6 +188,9 @@ function onLabelStudioConstructor(labelStudio)
 
     const events = labelStudio.events;
 
+    // labelStudio obtained here is different than the one we already have
+    // (the one whose constructor we hooked)
+    // and we need this one
     events.on("labelStudioLoad", labelStudio => currentLabelStudio = labelStudio);
 
     events.on("selectAnnotation", annotation =>
