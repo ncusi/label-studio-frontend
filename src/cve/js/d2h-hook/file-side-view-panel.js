@@ -37,7 +37,7 @@ function padCellText(cell)
     textElement.innerText = "\u00a0".repeat(3) + textElement.innerText;
 }
 
-// make the cell bigger to fit the drop-down list and line number
+// make the cell bigger to fit the drop-down list (or text if it's hunk group header)
 const setCellStyle = cell => cell.style.width = "5em";
 
 function adjustCell(cell)
@@ -236,8 +236,9 @@ function createSelectHunkCheckbox(parent, dropDownLists)
     label.appendChild(checkbox);
     label.appendChild(document.createTextNode("Hunk"))
 
-    label.style.fontSize = "1.15em";
-
+    // make it a little bigger so that the space between this cell
+    // and the first one in the hunk group is filled
+    parent.style.height = "2em";
     parent.style.backgroundColor = "black";
 
     setSelectHunkCheckboxOnChangeHandler(checkbox, dropDownLists);
