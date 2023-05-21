@@ -7,7 +7,7 @@ class FileCategory
     }
 }
 
-const FILE_CATEGORY_CLASS_NAME_PREFIX = `file-category-`;
+const FILE_CATEGORY_CLASS_NAME_PREFIX = "file-category-";
 
 const getFileCategoryClassName = fileCategoryName => FILE_CATEGORY_CLASS_NAME_PREFIX + fileCategoryName;
 

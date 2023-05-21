@@ -1,7 +1,7 @@
 import {createFileCategories} from "./d2h-hook/file-category.js";
 import {createLineCategories} from "./d2h-hook/line-category.js";
 
-let lineCategories = 
+let lineCategories =
 [
     [["Bugfix",         "Fix"],  "red"],
     [["Infrastructure", "Infr"], "yellow"],
