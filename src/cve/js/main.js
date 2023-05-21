@@ -91,6 +91,14 @@ function onGitDiffContainerCreated(annotation, gitDiffContainer, gitDiff, catego
 // leaving annotation panel)
 let currentLabelStudio = null;
 
+// task.data is a string here
+const getTaskData = () => JSON.parse(currentLabelStudio.task.data);
+
+// copy initial categorization so that the same reference isn't modified by multiple annotations
+const getInitialCategorization = () => structuredClone(getTaskData().initialCategorization);
+
+const isGitDiffTask = () => getTaskData().gitDiff;
+
 function createMutationObserver()
 {
     const observer = new MutationObserver(mutationList =>
@@ -115,9 +123,25 @@ function createMutationObserver()
         if(!target.contains(gitDiffContainer))
             return;
 
+        // if there's no git diff we assume it's a task unrelated to annotating
+        // changed files so we skip doing any work here
+        if(!isGitDiffTask())
+            return;
+        
         const labelStudio = currentLabelStudio;
         
         const annotation = labelStudio.annotationStore.selected;
+        
+        // sometimes (e.g. when creating viewing a prediction)
+        // the annotation is displayed without being selected first so
+        // it has to be set up here
+        if(!annotation.cve)
+            annotation.cve = {};
+
+        // when creating a new annotation it's been selected (so annotation.cve is equal to {})
+        // but it hasn't been serialized so it has to be set up here
+        if(!annotation.cve.categorizedFiles)
+            annotation.cve.categorizedFiles = getInitialCategorization();
 
         const cve = annotation.cve;
 
@@ -131,13 +155,10 @@ function createMutationObserver()
             return;
         }
 
-        // task.data is a string here
-        const taskData = JSON.parse(labelStudio.task.data);
-
         // annotation is loaded for the first time
         // (it's supposed to contain either previously saved categorization
         // or initial categorization gained in some other way, e.g. using a heuristic)
-        onGitDiffContainerCreated(annotation, gitDiffContainer, taskData.gitDiff, cve.categorizedFiles);
+        onGitDiffContainerCreated(annotation, gitDiffContainer, getTaskData().gitDiff, cve.categorizedFiles);
     });
 
     observer.observe(document.body,
@@ -162,7 +183,7 @@ function disableCreatingReadOnlyProperties()
     };
 }
 
-function onFirstHookCall()
+function onHookFirstCall()
 {
     createCategories();
 
@@ -175,15 +196,24 @@ function onLabelStudioConstructor(labelStudio)
 {
     // create categories and mutation observer only the first time the hook code is called
     if(!currentLabelStudio)
-        onFirstHookCall();
+        onHookFirstCall();
     
-    labelStudio.options.interfaces =
+    labelStudio.options.interfaces = 
     [
+        "panel",
+        "topbar",
         "update",
         "submit",
         "controls",
-        "topbar",
-        "annotations:tabs"
+        "instruction",
+        "side-column",
+        "edit-history",
+        "topbar:prevnext",
+        "annotations:menu",
+        "predictions:menu",
+        "predictions:tabs",
+        "annotations:delete",
+        "annotations:add-new"
     ];
 
     const events = labelStudio.events;
@@ -191,30 +221,39 @@ function onLabelStudioConstructor(labelStudio)
     // labelStudio obtained here is different than the one we already have
     // (the one whose constructor we hooked)
     // and we need this one
-    events.on("labelStudioLoad", labelStudio => currentLabelStudio = labelStudio);
-
-    events.on("selectAnnotation", annotation =>
+    events.on("labelStudioLoad", labelStudio =>
     {
-        // if this annotation has already been selected before then skip modifying its properties
-        if(annotation.cve)
+        currentLabelStudio = labelStudio;
+
+        // if there's no git diff we assume it's a task unrelated to annotating
+        // changed files so we skip doing any work here
+        if(!isGitDiffTask())
             return;
-
-        annotation.cve = {};
-
-        const originalDeserializeResults = annotation.deserializeResults.bind(annotation);
-
-        annotation.deserializeResults = (results, options) =>
+        
+        events.on("selectAnnotation", annotation =>
         {
-            originalDeserializeResults(results, options);
-    
-            // find a git diff result (there's only 1 at most)
-            let gitDiffResult = results.find(result => result.type === GIT_DIFF_ANNOTATION_TYPE_NAME);
-            
-            if(!gitDiffResult)
+            // if this annotation has already been set up before then skip modifying its properties
+            if(annotation.cve)
                 return;
-            
-            annotation.cve.categorizedFiles = gitDiffResult.value.files;
-        };
+
+            annotation.cve = {};
+
+            const originalDeserializeResults = annotation.deserializeResults.bind(annotation);
+
+            annotation.deserializeResults = (results, options) =>
+            {
+                originalDeserializeResults(results, options);
+
+                // find a git diff result (there's only 1 at most)
+                let gitDiffResult = results.find(result => result.type === GIT_DIFF_ANNOTATION_TYPE_NAME);
+
+                // if there's no git diff result then it's likely this annotation has been loaded from a prediction
+                // (which contains only the error creation date), so we need to get categorization data from task data
+                let categorizedFiles = gitDiffResult ? gitDiffResult.value.files : getInitialCategorization();
+                
+                annotation.cve.categorizedFiles = categorizedFiles;
+            };
+        });
     });
 }
 
