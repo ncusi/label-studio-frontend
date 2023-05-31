@@ -3,7 +3,7 @@ import {getLineCategoryClassName} from "./line-category.js";
 import {createLineRatingDropDownList} from "./line-rating.js";
 
 // remove all children (it's just the line number)
-const clearCell = cell => cell.innerHTML = "";
+const clearCell = cell => cell.replaceChildren();
 
 function setCellContent(cell, child)
 {

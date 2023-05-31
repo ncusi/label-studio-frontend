@@ -1,90 +1,14 @@
-import {createCategories} from "./categories.js";
-import {createRatedFiles} from "./d2h-hook/main.js";
+import "./styles.js";
 
-import {Diff2HtmlUI} from "diff2html/lib/ui/js/diff2html-ui.js";
+import {createCategories} from "./file-categorization/categories.js";
 
-/* import styles for webpack MiniCssExtractPlugin plugin */
-// highlight.js css must be imported before diff2html css
-import "../css/highlight.js.css";
-import "../css/diff2html.css";
+import {fillGitDiffContainer} from "./file-categorization/main.js";
+import {fillHyperlinksContainer} from "./hyperlink-labeling/main.js";
 
-import "../css/d2h-hook/file-rating.css";
-import "../css/d2h-hook/line-rating.css";
-import "../css/d2h-hook/global-styles.css";
-
-function fillGitDiffContainer(container, diff, categorizedFiles)
-{
-    const diff2htmlUi = new Diff2HtmlUI(container, diff,
-    {
-        matching: "lines",
-        outputFormat: "side-by-side"
-    });
-    
-    diff2htmlUi.draw();
-    
-    let ratedFiles = createRatedFiles(container, categorizedFiles);
-
-    return ratedFiles;
-}
-
-const getSelectedCategory = dropDownList => dropDownList.value;
-
-function serializeRatedLine(ratedLine)
-{
-    return {
-        lineNumber: ratedLine.lineNumber,
-        category: getSelectedCategory(ratedLine.dropDownList)
-    };
-}
-
-function serializeRatedFile(ratedFile)
-{
-    return {
-        fileName: ratedFile.fileName,
-        category: getSelectedCategory(ratedFile.dropDownList),
-        lines:
-        {
-            beforeChange: ratedFile.ratedLinesBeforeChange.map(serializeRatedLine),
-            afterChange: ratedFile.ratedLinesAfterChange.map(serializeRatedLine)
-        }
-    };
-}
-
-const GIT_DIFF_ANNOTATION_TYPE_NAME = "gitdiff";
+import {CVE_ANNOTATION_RESULT_TYPE_NAME, serializeCVEAnnotation} from "./serialization.js";
 
 const GIT_DIFF_CONTAINER_ID = "git-diff-container";
-
-function onGitDiffContainerCreated(annotation, gitDiffContainer, gitDiff, categorizedFiles)
-{
-    const originalSerializeAnnotation = annotation.serializeAnnotation.bind(annotation);
-
-    annotation.serializeAnnotation = options =>
-    {
-        let serialized = originalSerializeAnnotation(options);
-
-        // append serialized git diff annotation data
-        let gitDiffResult =
-        {
-            type: GIT_DIFF_ANNOTATION_TYPE_NAME,
-            value:
-            {
-                files: annotation.cve.ratedFiles.map(serializeRatedFile)
-            }
-        };
-
-        serialized.push(gitDiffResult);
-
-        return serialized;
-    };
-
-    let ratedFiles = fillGitDiffContainer(gitDiffContainer, gitDiff, categorizedFiles);
-
-    annotation.cve =
-    {
-        ratedFiles: ratedFiles,
-        gitDiffContainer: gitDiffContainer
-    };
-}
+const HYPERLINKS_CONTAINER_ID = "hyperlinks-container";
 
 // before any label studio instance has been created it's set to null
 // but there can be many subsequent instances (e.g. when joining and
@@ -94,10 +18,135 @@ let currentLabelStudio = null;
 // task.data is a string here
 const getTaskData = () => JSON.parse(currentLabelStudio.task.data);
 
-// copy initial categorization so that the same reference isn't modified by multiple annotations
-const getInitialCategorization = () => structuredClone(getTaskData().initialCategorization);
+const getInitialAnnotation = () => getTaskData().initialAnnotation;
 
-const isGitDiffTask = () => getTaskData().gitDiff;
+function createContainer(id)
+{
+    let container = document.createElement("div");
+    container.id = id;
+
+    return container;
+}
+
+function createHyperlinksContainer(cve)
+{
+    // make a deep clone of the initial annotation data
+    // because we want to add/remove labels later
+    // and we obviously don't want to modify the same reference
+    const labeledHyperlinks = structuredClone(cve.annotation.hyperlinks);
+
+    const hyperlinksContainer = createContainer(HYPERLINKS_CONTAINER_ID);
+
+    fillHyperlinksContainer(hyperlinksContainer, labeledHyperlinks, getInitialAnnotation().hyperlinks);
+    
+    cve.labeledHyperlinks = labeledHyperlinks;
+    cve.hyperlinksContainer = hyperlinksContainer;
+}
+
+function createGitDiffContainer(cve)
+{
+    const gitDiffContainer = createContainer(GIT_DIFF_CONTAINER_ID);
+    
+    // append the container temporarily so that all HTML manipulations
+    // within diff2html hook take effect (some of them require a node
+    // to be present in the DOM tree)
+    const target = document.body;
+
+    target.appendChild(gitDiffContainer);
+
+    const ratedFiles = fillGitDiffContainer(gitDiffContainer, getTaskData().gitDiff, cve.annotation.files);
+
+    // remove the container; its presence isn't needed anymore
+    target.removeChild(gitDiffContainer);
+
+    cve.ratedFiles = ratedFiles;
+    cve.gitDiffContainer = gitDiffContainer;
+}
+
+// annotation is loaded for the first time
+// (it's supposed to contain either previously saved categorization
+// or initial categorization gained in some other way, e.g. using a heuristic).
+// this function creates all custom containers because if only one got loaded,
+// the other one's data would be undefined when serializing the annotation,
+// so we need to create all at once if only one gets created.
+// also here `annotation.serializeAnnotation` gets hooked
+function onAnnotationLoaded(annotation)
+{
+    const cve = annotation.cve;
+
+    const originalSerializeAnnotation = annotation.serializeAnnotation.bind(annotation);
+
+    annotation.serializeAnnotation = options =>
+    {
+        let serialized = originalSerializeAnnotation(options);
+
+        serialized.push(serializeCVEAnnotation(cve));
+        
+        return serialized;
+    };
+
+    // create the custom containers
+    createGitDiffContainer(cve);
+    createHyperlinksContainer(cve);
+}
+
+function getSelectedAnnotation()
+{
+    const labelStudio = currentLabelStudio;
+
+    const annotation = labelStudio.annotationStore.selected;
+    
+    // sometimes (e.g. when viewing a prediction)
+    // the annotation is displayed without being selected first so
+    // it has to be set up here
+    if(!annotation.cve)
+        annotation.cve = {};
+
+    // when creating a new annotation it's been selected (so annotation.cve is equal to {})
+    // but it hasn't been deserialized so it has to be set up here
+    if(!annotation.cve.annotation)
+        annotation.cve.annotation = getInitialAnnotation();
+
+    return annotation;
+}
+
+function unfoldedContainerCollapseTag(target, containerId, containerCvePropertyName)
+{
+    let container = document.getElementById(containerId);
+
+    // if the container doesn't exist then its Collapse tag
+    // surely wasn't unfolded
+    if(!container)
+        return false;
+    
+    // if this unfolded Collapse tag didn't contain the container
+    // then it wasn't the tag we were looking for
+    if(!target.contains(container))
+        return false;
+    
+    const annotation = getSelectedAnnotation();
+
+    const cve = annotation.cve;
+    
+    // when not opening back a previously created annotation
+    if(!cve[containerCvePropertyName])
+        onAnnotationLoaded(annotation);
+
+    container.replaceWith(cve[containerCvePropertyName]);
+
+    return true;
+}
+
+function onUnfoldedCollapseTag(target)
+{
+    const containerDescriptors =
+    [
+        [GIT_DIFF_CONTAINER_ID, "gitDiffContainer"],
+        [HYPERLINKS_CONTAINER_ID, "hyperlinksContainer"]
+    ];
+
+    return containerDescriptors.some(descriptor => unfoldedContainerCollapseTag(target, ...descriptor));
+}
 
 function createMutationObserver()
 {
@@ -113,52 +162,7 @@ function createMutationObserver()
         if(!target.classList.contains("ant-collapse-item"))
             return;
         
-        let gitDiffContainer = document.getElementById(GIT_DIFF_CONTAINER_ID);
-
-        if(!gitDiffContainer)
-            return;
-        
-        // if this unfolded Collapse tag didn't contain the git diff container
-        // then it wasn't the tag we were waiting for
-        if(!target.contains(gitDiffContainer))
-            return;
-
-        // if there's no git diff we assume it's a task unrelated to annotating
-        // changed files so we skip doing any work here
-        if(!isGitDiffTask())
-            return;
-        
-        const labelStudio = currentLabelStudio;
-        
-        const annotation = labelStudio.annotationStore.selected;
-        
-        // sometimes (e.g. when creating viewing a prediction)
-        // the annotation is displayed without being selected first so
-        // it has to be set up here
-        if(!annotation.cve)
-            annotation.cve = {};
-
-        // when creating a new annotation it's been selected (so annotation.cve is equal to {})
-        // but it hasn't been serialized so it has to be set up here
-        if(!annotation.cve.categorizedFiles)
-            annotation.cve.categorizedFiles = getInitialCategorization();
-
-        const cve = annotation.cve;
-
-        let container = cve.gitDiffContainer;
-
-        // when opening back the previously created annotation
-        if(container)
-        {
-            gitDiffContainer.replaceWith(container);
-
-            return;
-        }
-
-        // annotation is loaded for the first time
-        // (it's supposed to contain either previously saved categorization
-        // or initial categorization gained in some other way, e.g. using a heuristic)
-        onGitDiffContainerCreated(annotation, gitDiffContainer, getTaskData().gitDiff, cve.categorizedFiles);
+        onUnfoldedCollapseTag(target);
     });
 
     observer.observe(document.body,
@@ -188,8 +192,41 @@ function onHookFirstCall()
     createCategories();
 
     createMutationObserver();
-
+    
     disableCreatingReadOnlyProperties();
+}
+
+function hookDeserializeResults(annotation)
+{
+    const originalDeserializeResults = annotation.deserializeResults.bind(annotation);
+
+    annotation.deserializeResults = (results, options) =>
+    {                
+        originalDeserializeResults(results, options);
+
+        // find our annotation result (there's only 1 at most)
+        let cveAnnotationResult = results.find(result => result.type === CVE_ANNOTATION_RESULT_TYPE_NAME);
+
+        // if there's no cve annotation result then it's likely this annotation has been loaded from a prediction
+        // (which contains only dates), so we need to get categorization data from task data
+        let cveAnnotation = cveAnnotationResult ? cveAnnotationResult.value : getInitialAnnotation();
+        
+        annotation.cve.annotation = cveAnnotation;
+
+        // _initialAnnotationObj is used when copying annotations.
+        // `originalDeserializeResults` removes "broken" results
+        // (e.g. those without valid from_name and to_name fields)
+        // so we need to update it with the cve results here
+        // if we want annotation copying to work correctly.
+        // if we don't set it here then initial annotation will be copied and used
+        if(cveAnnotationResult)
+            annotation._initialAnnotationObj.push(cveAnnotationResult);
+        
+        // hook `serializeAnnotation` here so that when no container Collapse tag is unfolded
+        // and the user presses "Update" for the annotation, the correct results are
+        // saved (instead of default, initial annotation, which causes all annotations to be lost)
+        onAnnotationLoaded(annotation);
+    };
 }
 
 function onLabelStudioConstructor(labelStudio)
@@ -209,11 +246,12 @@ function onLabelStudioConstructor(labelStudio)
         "side-column",
         "edit-history",
         "topbar:prevnext",
-        "annotations:menu",
-        "predictions:menu",
-        "predictions:tabs",
+        "annotations:tabs",
         "annotations:delete",
-        "annotations:add-new"
+        "annotations:add-new",
+        "annotations:history",
+        "predictions:menu",
+        "predictions:tabs"
     ];
 
     const events = labelStudio.events;
@@ -225,11 +263,6 @@ function onLabelStudioConstructor(labelStudio)
     {
         currentLabelStudio = labelStudio;
 
-        // if there's no git diff we assume it's a task unrelated to annotating
-        // changed files so we skip doing any work here
-        if(!isGitDiffTask())
-            return;
-        
         events.on("selectAnnotation", annotation =>
         {
             // if this annotation has already been set up before then skip modifying its properties
@@ -238,21 +271,7 @@ function onLabelStudioConstructor(labelStudio)
 
             annotation.cve = {};
 
-            const originalDeserializeResults = annotation.deserializeResults.bind(annotation);
-
-            annotation.deserializeResults = (results, options) =>
-            {
-                originalDeserializeResults(results, options);
-
-                // find a git diff result (there's only 1 at most)
-                let gitDiffResult = results.find(result => result.type === GIT_DIFF_ANNOTATION_TYPE_NAME);
-
-                // if there's no git diff result then it's likely this annotation has been loaded from a prediction
-                // (which contains only the error creation date), so we need to get categorization data from task data
-                let categorizedFiles = gitDiffResult ? gitDiffResult.value.files : getInitialCategorization();
-                
-                annotation.cve.categorizedFiles = categorizedFiles;
-            };
+            hookDeserializeResults(annotation);
         });
     });
 }
