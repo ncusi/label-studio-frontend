@@ -1,0 +1,90 @@
+.hyperlink-label
+{
+    font-size: 20px;
+    color: #E0E0E0;
+    font-weight: bold;
+    text-align: center;
+    
+    line-height: 1;
+    padding: 3px 7px;
+    border-radius: 10px;
+    display: inline-block;
+
+    margin-top: 3px;
+    margin-right: 5px;
+    margin-bottom: 3px;
+
+    white-space: nowrap;
+    background-color: #404040;
+
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.hyperlink-label:hover
+{
+    cursor: not-allowed;
+    background-color: #9A1A4A;
+}
+
+.hyperlink-labels-container
+{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.hyperlink-url-container
+{
+    display: block;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.hyperlink-labeling-container
+{
+    margin: 20px;
+    padding: 20px;
+    border: 15px solid black;
+}
+
+.hyperlink-add-label-container > input
+{
+    margin-right: 5px;
+}
+
+.hyperlink-add-label-container > button
+{
+    border: solid black;
+    color: #E0E0E0;
+    font-weight: bold;
+
+    background-color: black;
+}
+
+.hyperlink-date-pickers-container
+{
+    margin: 25px;
+    border: solid black 7.5px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.hyperlink-date-pickers-container > label
+{
+    font-size: 15px;
+
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.hyperlink-date-pickers-container > label > input
+{
+    display: block;
+    margin-left: 15px;
+}
