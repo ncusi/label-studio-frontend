@@ -48,7 +48,9 @@
 {
     margin: 20px;
     padding: 20px;
-    border: 15px solid black;
+
+    background: #F9F9F9;
+    border: 1px solid #DEE2E6;
 }
 
 .hyperlink-add-label-container > input
@@ -58,17 +60,17 @@
 
 .hyperlink-add-label-container > button
 {
-    border: solid black;
     color: #E0E0E0;
     font-weight: bold;
 
+    border: solid black;
     background-color: black;
 }
 
 .hyperlink-date-pickers-container
 {
     margin: 25px;
-    border: solid black 7.5px;
+    border: 1px solid #DEE2E6;
 
     display: flex;
     flex-direction: row;
