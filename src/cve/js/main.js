@@ -1,13 +1,14 @@
+// import styles for webpack MiniCssExtractPlugin plugin
 import "./styles.js";
 
 import {createCategories} from "./file-categorization/categories.js";
 
-import {fillGitDiffContainer} from "./file-categorization/main.js";
+import {fillGitDiffsContainer} from "./file-categorization/main.js";
 import {fillHyperlinksContainer} from "./hyperlink-labeling/main.js";
 
 import {CVE_ANNOTATION_RESULT_TYPE_NAME, serializeCVEAnnotation} from "./serialization.js";
 
-const GIT_DIFF_CONTAINER_ID = "git-diff-container";
+const GIT_DIFFS_CONTAINER_ID = "git-diffs-container";
 const HYPERLINKS_CONTAINER_ID = "hyperlinks-container";
 
 // before any label studio instance has been created it's set to null
@@ -43,24 +44,23 @@ function createHyperlinksContainer(cve)
     cve.hyperlinksContainer = hyperlinksContainer;
 }
 
-function createGitDiffContainer(cve)
+function createGitDiffsContainer(cve)
 {
-    const gitDiffContainer = createContainer(GIT_DIFF_CONTAINER_ID);
+    const gitDiffsContainer = createContainer(GIT_DIFFS_CONTAINER_ID);
     
     // append the container temporarily so that all HTML manipulations
     // within diff2html hook take effect (some of them require a node
     // to be present in the DOM tree)
     const target = document.body;
+    target.appendChild(gitDiffsContainer);
 
-    target.appendChild(gitDiffContainer);
-
-    const ratedFiles = fillGitDiffContainer(gitDiffContainer, getTaskData().gitDiff, cve.annotation.files);
+    const diffsRatedFiles = fillGitDiffsContainer(gitDiffsContainer, getTaskData().gitDiffs, cve.annotation.diffsFiles);
 
     // remove the container; its presence isn't needed anymore
-    target.removeChild(gitDiffContainer);
+    target.removeChild(gitDiffsContainer);
 
-    cve.ratedFiles = ratedFiles;
-    cve.gitDiffContainer = gitDiffContainer;
+    cve.diffsRatedFiles = diffsRatedFiles;
+    cve.gitDiffsContainer = gitDiffsContainer;
 }
 
 // annotation is loaded for the first time
@@ -86,7 +86,7 @@ function onAnnotationLoaded(annotation)
     };
 
     // create the custom containers
-    createGitDiffContainer(cve);
+    createGitDiffsContainer(cve);
     createHyperlinksContainer(cve);
 }
 
@@ -141,7 +141,7 @@ function onUnfoldedCollapseTag(target)
 {
     const containerDescriptors =
     [
-        [GIT_DIFF_CONTAINER_ID, "gitDiffContainer"],
+        [GIT_DIFFS_CONTAINER_ID, "gitDiffsContainer"],
         [HYPERLINKS_CONTAINER_ID, "hyperlinksContainer"]
     ];
 

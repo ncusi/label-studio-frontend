@@ -279,16 +279,16 @@ function createAllSelectorDropDownList(dropDownLists, afterChangePanel)
     {
         let value = dropDownList.value;
 
-        // change value for all (if the value has actually changed)
-        dropDownLists.forEach(dropDownList =>
-        {
-            if(dropDownList.value !== value)
-                selectDropDownListValue(dropDownList, value);
-        });
-
         // don't change the selected option so that it can be chosen again
         // and the header text stays visible
         dropDownList.value = header.value;
+
+        // change value for all (if the value has actually changed)
+        dropDownLists.forEach(list =>
+        {
+            if(list.value !== value)
+                selectDropDownListValue(list, value);
+        });
     };
 
     dropDownList.appendChild(header);
