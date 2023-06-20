@@ -31,8 +31,8 @@ const serializeCVEAnnotation = cve =>
     type: CVE_ANNOTATION_RESULT_TYPE_NAME,
     value:
     {
-        files: cve.ratedFiles.map(serializeRatedFile),
-        hyperlinks: cve.labeledHyperlinks.map(serializeLabeledHyperlink)
+        hyperlinks: cve.labeledHyperlinks.map(serializeLabeledHyperlink),
+        diffsFiles: cve.diffsRatedFiles.map(ratedFiles => ratedFiles.map(serializeRatedFile))
     }
 });
 

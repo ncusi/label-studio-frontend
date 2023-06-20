@@ -1,4 +1,3 @@
-/* import styles for webpack MiniCssExtractPlugin plugin */
 // highlight.js css must be imported before diff2html css
 import "../css/file-categorization/highlight.js.css";
 import "../css/file-categorization/diff2html.css";
