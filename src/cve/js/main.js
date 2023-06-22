@@ -54,10 +54,19 @@ function createGitDiffsContainer(cve)
     const target = document.body;
     target.appendChild(gitDiffsContainer);
 
-    const diffsRatedFiles = fillGitDiffsContainer(gitDiffsContainer, getTaskData().gitDiffs, cve.annotation.diffsFiles);
-
-    // remove the container; its presence isn't needed anymore
-    target.removeChild(gitDiffsContainer);
+    let diffsRatedFiles = null;
+    
+    try
+    {
+        diffsRatedFiles = fillGitDiffsContainer(gitDiffsContainer, getTaskData().gitDiffs, cve.annotation.diffsFiles);
+    }
+    finally
+    {
+        // remove the container; its presence isn't needed anymore
+        // (remove it in the finally block so that when something goes wrong
+        // during filling the container then it won't stay in the DOM)
+        target.removeChild(gitDiffsContainer);
+    }
 
     cve.diffsRatedFiles = diffsRatedFiles;
     cve.gitDiffsContainer = gitDiffsContainer;
