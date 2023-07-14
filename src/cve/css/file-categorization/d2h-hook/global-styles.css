@@ -9,5 +9,5 @@
 /* Remove horizontal scrollbar in d2h code lines (mainly for Chrome) */
 .d2h-code-side-line ::-webkit-scrollbar
 {
-    height: 0px;
+    display: none;
 }
