@@ -21,9 +21,11 @@ function createLineRatingDropDownList()
     {
         let option = document.createElement("option");
 
-        option.value = lineCategory.name;
+        let name = lineCategory.name;
+
+        option.value = name;
+        option.className = getLineCategoryClassName(name);
         option.innerText = lineCategory.getAbbreviation();
-        option.className = getLineCategoryClassName(lineCategory.name);
 
         dropDownList.appendChild(option);
     });
@@ -66,10 +68,12 @@ function createLineRatingLegendElement()
 
     legend.appendChild(header);
 
-    lineCategories
-    // skip categories where there's no abbreviation
-    .filter(lineCategory => lineCategory.abbreviation)
-    .forEach(lineCategory => legend.appendChild(createLegendLineCategoryOption(lineCategory)));
+    lineCategories.forEach(lineCategory =>
+    {
+        // skip categories where there's no abbreviation
+        if(lineCategory.abbreviation)
+            legend.appendChild(createLegendLineCategoryOption(lineCategory));
+    });
 
     return legend;
 }

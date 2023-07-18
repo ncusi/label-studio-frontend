@@ -46,9 +46,11 @@ function createFileRatingDropDownList()
     {
         let option = document.createElement("option");
 
-        option.value = fileCategory.name;
-        option.innerText = fileCategory.name;
-        option.className = getFileCategoryClassName(fileCategory.name);
+        let name = fileCategory.name;
+
+        option.value = name;
+        option.innerText = name;
+        option.className = getFileCategoryClassName(name);
 
         dropDownList.appendChild(option);
     });
