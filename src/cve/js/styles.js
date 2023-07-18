@@ -5,5 +5,6 @@ import "../css/file-categorization/diff2html.css";
 import "../css/file-categorization/d2h-hook/file-rating.css";
 import "../css/file-categorization/d2h-hook/line-rating.css";
 import "../css/file-categorization/d2h-hook/global-styles.css";
+import "../css/file-categorization/d2h-hook/git-commit-message.css";
 
 import "../css/hyperlink-labeling/main.css";

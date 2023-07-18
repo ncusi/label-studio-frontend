@@ -11,6 +11,9 @@ import {CVE_ANNOTATION_RESULT_TYPE_NAME, serializeCVEAnnotation} from "./seriali
 const GIT_DIFFS_CONTAINER_ID = "git-diffs-container";
 const HYPERLINKS_CONTAINER_ID = "hyperlinks-container";
 
+const GIT_DIFFS_CONTAINER_CVE_PROPERTY_NAME = "gitDiffsContainer";
+const HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME = "hyperlinksContainer";
+
 // before any label studio instance has been created it's set to null
 // but there can be many subsequent instances (e.g. when joining and
 // leaving annotation panel)
@@ -41,7 +44,7 @@ function createHyperlinksContainer(cve)
     fillHyperlinksContainer(hyperlinksContainer, labeledHyperlinks, getInitialAnnotation().hyperlinks);
     
     cve.labeledHyperlinks = labeledHyperlinks;
-    cve.hyperlinksContainer = hyperlinksContainer;
+    cve[HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME] = hyperlinksContainer;
 }
 
 function createGitDiffsContainer(cve)
@@ -69,7 +72,7 @@ function createGitDiffsContainer(cve)
     }
 
     cve.diffsRatedFiles = diffsRatedFiles;
-    cve.gitDiffsContainer = gitDiffsContainer;
+    cve[GIT_DIFFS_CONTAINER_CVE_PROPERTY_NAME] = gitDiffsContainer;
 }
 
 // annotation is loaded for the first time
@@ -150,8 +153,8 @@ function onUnfoldedCollapseTag(target)
 {
     const containerDescriptors =
     [
-        [GIT_DIFFS_CONTAINER_ID, "gitDiffsContainer"],
-        [HYPERLINKS_CONTAINER_ID, "hyperlinksContainer"]
+        [GIT_DIFFS_CONTAINER_ID, GIT_DIFFS_CONTAINER_CVE_PROPERTY_NAME],
+        [HYPERLINKS_CONTAINER_ID, HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME]
     ];
 
     return containerDescriptors.some(descriptor => unfoldedContainerCollapseTag(target, ...descriptor));
