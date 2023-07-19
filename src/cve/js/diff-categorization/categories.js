@@ -5,11 +5,11 @@ let lineCategories =
 [
     [["bug(fix)",                "B/F"], "red"],
     [["bug(fix) + refactoring", "BF+R"], "red"],
-    [["documentation",           "Doc"], "orange"],
+    [["documentation",           "doc"], "orange"],
     ["test",                             "lightskyblue"],
     [["test + refactoring",      "T+R"], "lightskyblue"],
     [["refactoring",           "R-ing"], "yellow"],
-    [["other",                   "Oth"], "orchid"]
+    [["other",                   "oth"], "orchid"]
 ];
 
 let fileCategories =
