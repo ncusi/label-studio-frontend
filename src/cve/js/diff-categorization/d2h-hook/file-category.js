@@ -1,3 +1,5 @@
+import {removeWhitespaces} from "./util.js";
+
 class FileCategory
 {
     constructor(name, color)
@@ -9,7 +11,8 @@ class FileCategory
 
 const FILE_CATEGORY_CLASS_NAME_PREFIX = "file-category-";
 
-const getFileCategoryClassName = fileCategoryName => FILE_CATEGORY_CLASS_NAME_PREFIX + fileCategoryName;
+// fileCategoryName may contain whitespaces, which are not allowed in css class name
+const getFileCategoryClassName = fileCategoryName => FILE_CATEGORY_CLASS_NAME_PREFIX + removeWhitespaces(fileCategoryName);
 
 function createFileCategoryCssClasses(fileCategories)
 {
@@ -17,9 +20,10 @@ function createFileCategoryCssClasses(fileCategories)
 
     fileCategories.forEach(fileCategory =>
     {
+        // class name in css must be escaped, but not in js
         style.innerHTML +=
         `
-        .${getFileCategoryClassName(fileCategory.name)}
+        .${CSS.escape(getFileCategoryClassName(fileCategory.name))}
         {
             color: ${fileCategory.color};
         }

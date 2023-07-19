@@ -68,7 +68,7 @@ function createRatedLine(cell)
         dropDownList.classList.add(lastSelectedOptionClassName);
 
         cell.style.backgroundColor = window.getComputedStyle(dropDownList).color;
-    }
+    };
 
     // get the line number before it's removed inside `setCellContent`
     let lineNumber = parseInt(cell.innerText);

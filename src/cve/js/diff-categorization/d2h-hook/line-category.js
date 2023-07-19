@@ -1,3 +1,5 @@
+import {removeWhitespaces} from "./util.js";
+
 class LineCategory
 {
     constructor(name, color, abbreviation = null)
@@ -25,7 +27,8 @@ function makeLineCategory(name, color)
 
 const LINE_CATEGORY_CLASS_NAME_PREFIX = `line-category-`;
 
-const getLineCategoryClassName = lineCategoryName => LINE_CATEGORY_CLASS_NAME_PREFIX + lineCategoryName;
+// lineCategoryName may contain whitespaces, which are not allowed in css class name
+const getLineCategoryClassName = lineCategoryName => LINE_CATEGORY_CLASS_NAME_PREFIX + removeWhitespaces(lineCategoryName);
 
 function createLineCategoryCssClasses(lineCategories)
 {
@@ -33,9 +36,10 @@ function createLineCategoryCssClasses(lineCategories)
 
     lineCategories.forEach(lineCategory =>
     {
+        // class name in css must be escaped, but not in js
         style.innerHTML +=
         `
-        .${getLineCategoryClassName(lineCategory.name)}
+        .${CSS.escape(getLineCategoryClassName(lineCategory.name))}
         {
             color: ${lineCategory.color};
         }

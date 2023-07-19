@@ -3,12 +3,13 @@ import {createLineCategories} from "./d2h-hook/line-category.js";
 
 let lineCategories =
 [
-    [["Bugfix",         "Fix"],  "red"],
-    [["Infrastructure", "Infr"], "yellow"],
-    ["Test",                     "lightskyblue"],
-    [["Comment",        "Com"],  "lime"],
-    [["Documentation",  "Doc"],  "orange"],
-    [["Other",          "Oth"],  "orchid"]
+    [["Bug(fix)",                "B/F"], "red"],
+    [["Bug(fix) + refactoring", "BF+R"], "red"],
+    [["Documentation",           "Doc"], "orange"],
+    ["Test",                             "lightskyblue"],
+    [["Test + refactoring",      "T+R"], "lightskyblue"],
+    [["Refactoring",           "R-ing"], "yellow"],
+    [["Other",                   "Oth"], "orchid"]
 ];
 
 let fileCategories =
