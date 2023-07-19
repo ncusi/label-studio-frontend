@@ -1,6 +1,6 @@
 import {RatedLine} from "./line-rating.js";
-import {getLineCategoryClassName} from "./line-category.js";
 import {createLineRatingDropDownList} from "./line-rating.js";
+import {getLineCategoryClassName, getLineCategoryCellClassName} from "./line-category.js";
 
 // remove all children (it's just the line number)
 const clearCell = cell => cell.replaceChildren();
@@ -63,18 +63,20 @@ function createRatedLine(cell)
     {
         dropDownList.classList.remove(lastSelectedOptionClassName);
 
+        // if because initially lastSelectedOptionClassName is null, so
+        // getLineCategoryCellClassName would return invalid class name
+        if(lastSelectedOptionClassName)
+            cell.classList.remove(getLineCategoryCellClassName(lastSelectedOptionClassName));
+
         lastSelectedOptionClassName = getLineCategoryClassName(dropDownList.value);
 
         dropDownList.classList.add(lastSelectedOptionClassName);
-
-        cell.style.backgroundColor = window.getComputedStyle(dropDownList).color;
+        cell.classList.add(getLineCategoryCellClassName(lastSelectedOptionClassName));
     };
 
     // get the line number before it's removed inside `setCellContent`
     let lineNumber = parseInt(cell.innerText);
 
-    // needs to be appended before calling `select.onchange()`
-    // because otherwise `window.getComputedStyle()` returns empty data
     setCellContent(cell, dropDownList);
 
     // adjust when set

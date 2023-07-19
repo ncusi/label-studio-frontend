@@ -50,26 +50,8 @@ function createHyperlinksContainer(cve)
 function createGitCommitsContainer(cve)
 {
     const gitCommitsContainer = createContainer(GIT_COMMITS_CONTAINER_ID);
-    
-    // append the container temporarily so that all HTML manipulations
-    // within diff2html hook take effect (some of them require a node
-    // to be present in the DOM tree)
-    const target = document.body;
-    target.appendChild(gitCommitsContainer);
 
-    let diffsRatedFiles = null;
-    
-    try
-    {
-        diffsRatedFiles = fillGitCommitsContainer(gitCommitsContainer, getTaskData().gitCommits, cve.annotation.diffsFiles);
-    }
-    finally
-    {
-        // remove the container; its presence isn't needed anymore
-        // (remove it in the finally block so that when something goes wrong
-        // during filling the container then it won't stay in the DOM)
-        target.removeChild(gitCommitsContainer);
-    }
+    let diffsRatedFiles = fillGitCommitsContainer(gitCommitsContainer, getTaskData().gitCommits, cve.annotation.diffsFiles);
 
     cve.diffsRatedFiles = diffsRatedFiles;
     cve[GIT_COMMITS_CONTAINER_CVE_PROPERTY_NAME] = gitCommitsContainer;

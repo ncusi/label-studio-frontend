@@ -40,15 +40,15 @@ function fillGitCommitsContainer(container, gitCommits, diffsCategorizedFiles)
 
     let diffsRatedFiles = gitCommits.map((commit, i) =>
     {
+        let gitDiffContainer = createGitDiffContainer(commit.diff);
+
+        let ratedFiles = createRatedFiles(gitDiffContainer, diffsCategorizedFiles[i]);
+
         let gitCommitContainer = document.createElement("div");
         container.appendChild(gitCommitContainer);
 
         gitCommitContainer.appendChild(createGitCommitMessageContainer(commit.message));
-
-        let gitDiffContainer = createGitDiffContainer(commit.diff);
         gitCommitContainer.appendChild(gitDiffContainer);
-
-        let ratedFiles = createRatedFiles(gitDiffContainer, diffsCategorizedFiles[i]);
 
         return ratedFiles;
     });
