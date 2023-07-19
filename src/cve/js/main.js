@@ -1,9 +1,9 @@
 // import styles for webpack MiniCssExtractPlugin plugin
 import "./styles.js";
 
-import {createCategories} from "./file-categorization/categories.js";
+import {createCategories} from "./diff-categorization/categories.js";
 
-import {fillGitCommitsContainer} from "./file-categorization/main.js";
+import {fillGitCommitsContainer} from "./diff-categorization/main.js";
 import {fillHyperlinksContainer} from "./hyperlink-labeling/main.js";
 
 import {CVE_ANNOTATION_RESULT_TYPE_NAME, serializeCVEAnnotation} from "./serialization.js";
