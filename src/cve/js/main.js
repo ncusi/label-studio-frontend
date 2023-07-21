@@ -1,15 +1,18 @@
 // import styles for webpack MiniCssExtractPlugin plugin
 import "./styles.js";
 
-import {createCategories} from "./file-categorization/categories.js";
+import {createCategories} from "./diff-categorization/categories.js";
 
-import {fillGitDiffsContainer} from "./file-categorization/main.js";
+import {fillGitCommitsContainer} from "./diff-categorization/main.js";
 import {fillHyperlinksContainer} from "./hyperlink-labeling/main.js";
 
 import {CVE_ANNOTATION_RESULT_TYPE_NAME, serializeCVEAnnotation} from "./serialization.js";
 
-const GIT_DIFFS_CONTAINER_ID = "git-diffs-container";
 const HYPERLINKS_CONTAINER_ID = "hyperlinks-container";
+const GIT_COMMITS_CONTAINER_ID = "git-commits-container";
+
+const GIT_COMMITS_CONTAINER_CVE_PROPERTY_NAME = "gitCommitsContainer";
+const HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME = "hyperlinksContainer";
 
 // before any label studio instance has been created it's set to null
 // but there can be many subsequent instances (e.g. when joining and
@@ -41,35 +44,17 @@ function createHyperlinksContainer(cve)
     fillHyperlinksContainer(hyperlinksContainer, labeledHyperlinks, getInitialAnnotation().hyperlinks);
     
     cve.labeledHyperlinks = labeledHyperlinks;
-    cve.hyperlinksContainer = hyperlinksContainer;
+    cve[HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME] = hyperlinksContainer;
 }
 
-function createGitDiffsContainer(cve)
+function createGitCommitsContainer(cve)
 {
-    const gitDiffsContainer = createContainer(GIT_DIFFS_CONTAINER_ID);
-    
-    // append the container temporarily so that all HTML manipulations
-    // within diff2html hook take effect (some of them require a node
-    // to be present in the DOM tree)
-    const target = document.body;
-    target.appendChild(gitDiffsContainer);
+    const gitCommitsContainer = createContainer(GIT_COMMITS_CONTAINER_ID);
 
-    let diffsRatedFiles = null;
-    
-    try
-    {
-        diffsRatedFiles = fillGitDiffsContainer(gitDiffsContainer, getTaskData().gitDiffs, cve.annotation.diffsFiles);
-    }
-    finally
-    {
-        // remove the container; its presence isn't needed anymore
-        // (remove it in the finally block so that when something goes wrong
-        // during filling the container then it won't stay in the DOM)
-        target.removeChild(gitDiffsContainer);
-    }
+    let diffsRatedFiles = fillGitCommitsContainer(gitCommitsContainer, getTaskData().gitCommits, cve.annotation.diffsFiles);
 
     cve.diffsRatedFiles = diffsRatedFiles;
-    cve.gitDiffsContainer = gitDiffsContainer;
+    cve[GIT_COMMITS_CONTAINER_CVE_PROPERTY_NAME] = gitCommitsContainer;
 }
 
 // annotation is loaded for the first time
@@ -95,7 +80,7 @@ function onAnnotationLoaded(annotation)
     };
 
     // create the custom containers
-    createGitDiffsContainer(cve);
+    createGitCommitsContainer(cve);
     createHyperlinksContainer(cve);
 }
 
@@ -150,8 +135,8 @@ function onUnfoldedCollapseTag(target)
 {
     const containerDescriptors =
     [
-        [GIT_DIFFS_CONTAINER_ID, "gitDiffsContainer"],
-        [HYPERLINKS_CONTAINER_ID, "hyperlinksContainer"]
+        [GIT_COMMITS_CONTAINER_ID, GIT_COMMITS_CONTAINER_CVE_PROPERTY_NAME],
+        [HYPERLINKS_CONTAINER_ID, HYPERLINKS_CONTAINER_CVE_PROPERTY_NAME]
     ];
 
     return containerDescriptors.some(descriptor => unfoldedContainerCollapseTag(target, ...descriptor));
