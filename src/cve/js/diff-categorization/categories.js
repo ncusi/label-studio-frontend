@@ -20,7 +20,7 @@ let fileCategories =
     ["other",         "orchid"],
     ["programming",   "red"],
     ["project",       "pink"],
-    ["tests",         "lightskyblue"]
+    ["test",          "lightskyblue"]
 ];
 
 function createCategories()
