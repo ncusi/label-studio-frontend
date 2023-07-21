@@ -23,7 +23,7 @@ function createFileCategoryCssClasses(fileCategories)
         // class name in css must be escaped, but not in js
         style.innerHTML +=
         `
-        .${getFileCategoryClassName(CSS.escape(fileCategory.name))}
+        .${CSS.escape(getFileCategoryClassName(fileCategory.name))}
         {
             color: ${fileCategory.color};
         }

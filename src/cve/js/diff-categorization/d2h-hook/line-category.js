@@ -38,7 +38,7 @@ const getLineCategoryCSS = (className, colorPropertyName, color) =>
 }
 `;
 
-const getLineCategoryCellClassName = lineCategoryClassName => lineCategoryClassName + "-cell";
+const getLineCategoryCellClassName = lineCategoryClassName => "cell-" + lineCategoryClassName;
 
 function createLineCategoryCssClasses(lineCategories)
 {
@@ -49,7 +49,7 @@ function createLineCategoryCssClasses(lineCategories)
         let color = lineCategory.color;
 
         // class name in css must be escaped, but not in js
-        let lineCategoryClassName = getLineCategoryClassName(CSS.escape(lineCategory.name));
+        let lineCategoryClassName = CSS.escape(getLineCategoryClassName(lineCategory.name));
 
         // create css class for the line ("color" property)
         // and its containing cell ("background-color" property)
