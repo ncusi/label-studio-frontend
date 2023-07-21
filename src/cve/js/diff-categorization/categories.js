@@ -14,10 +14,13 @@ let lineCategories =
 
 let fileCategories =
 [
-    ["code",          "red"],
+    ["data",          "lime"],
     ["documentation", "orange"],
-    ["test",          "lightskyblue"],
-    ["other",         "orchid"]
+    ["markup",        "yellow"],
+    ["other",         "orchid"],
+    ["programming",   "red"],
+    ["project",       "pink"],
+    ["tests",         "lightskyblue"]
 ];
 
 function createCategories()
