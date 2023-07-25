@@ -17,10 +17,10 @@ let fileCategories =
     ["data",          "lime"],
     ["documentation", "orange"],
     ["markup",        "yellow"],
-    ["other",         "orchid"],
     ["programming",   "red"],
     ["project",       "pink"],
-    ["test",          "lightskyblue"]
+    ["test",          "lightskyblue"],
+    ["other",         "orchid"]
 ];
 
 function createCategories()
