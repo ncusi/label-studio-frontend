@@ -196,4 +196,4 @@ function fillHyperlinksContainer(container, labeledHyperlinks, initialAnnotation
 
 export {
     fillHyperlinksContainer
-}
+};
